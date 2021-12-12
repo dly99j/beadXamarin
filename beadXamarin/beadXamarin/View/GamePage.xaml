@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:view="clr-namespace:beadXamarin.View"
+             xmlns:controls="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
+             x:Class="beadXamarin.View.GamePage"
+             Title="Játék">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- stílusok a vezérlőknek -->
+            <Style x:Key="MainLabelStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="Micro" />
+                <Setter Property="Margin" Value="1" />
+            </Style>
+            <Style x:Key="MainButtonStyle" TargetType="Button">
+                <Setter Property="FontSize" Value="Micro" />
+                <Setter Property="BackgroundColor" Value="Blue" />
+                <Setter Property="BorderRadius" Value="0" />
+                <Setter Property="BorderWidth" Value="0" />
+                <Setter Property="BorderColor" Value="Blue" />
+                <Setter Property="Margin" Value="5" />
+                <Setter Property="HeightRequest" Value="30" />
+            </Style>
+            <Style x:Key="FieldStyle" TargetType="Button">
+                <Setter Property="FontSize" Value="Small" />
+                <Setter Property="Margin" Value="1" />
+                <Setter Property="BorderRadius" Value="0" />
+                <Setter Property="BorderWidth" Value="0" />
+                <Setter Property="WidthRequest" Value="38" />
+                <Setter Property="HeightRequest" Value="38" />
+                <Style.Triggers>
+                    <!-- a színt a mező zárolása állítja be -->
+                    <DataTrigger TargetType="Button" Binding="{Binding IsLocked}" Value="True">
+                        <Setter Property="BackgroundColor" Value="Gray" />
+                        <Setter Property="TextColor" Value="White" />
+                        <Setter Property="BorderColor" Value="Gray" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsLocked}" Value="False">
+                        <Setter Property="BackgroundColor" Value="White" />
+                        <Setter Property="TextColor" Value="Black" />
+                        <Setter Property="BorderColor" Value="White" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- a gombokat a képernyő tetejére helyezzük -->
+        <Button Text="Új játék" Command="{Binding NewGameCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="0" HorizontalOptions="Start" />
+        <Button Text="Beállítások" Command="{Binding ExitCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="0" HorizontalOptions="End" />
+
+        <controls:FlowListView Grid.Row="1" FlowColumnCount="10" FlowItemsSource="{Binding Fields}" SeparatorVisibility="None">
+            <!-- a játéktáblát egy sorfolytos listával valósítjuk meg -->
+            <controls:FlowListView.FlowColumnTemplate>
+                <DataTemplate>
+                    <!-- a rács elemei gombok lesznek -->
+                    <Button CommandParameter="{Binding Number}" Text="{Binding Text}" Style="{StaticResource FieldStyle}" VerticalOptions="Center" HorizontalOptions="Center" />
+                </DataTemplate>
+            </controls:FlowListView.FlowColumnTemplate>
+        </controls:FlowListView>
+
+        <!-- az információkat alul írjuk ki -->
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Start" Grid.Row="2">
+            <Label Text="Lépésszám: " Style="{StaticResource MainLabelStyle}" />
+            <Label Text="{Binding GameStepCount}" Style="{StaticResource MainLabelStyle}" />
+        </StackLayout>
+        <StackLayout Orientation="Horizontal" HorizontalOptions="End" Grid.Row="2">
+            <Label Text="Játékidő: " Style="{StaticResource MainLabelStyle}" />
+            <Label Text="{Binding GameTime}" Style="{StaticResource MainLabelStyle}" />
+        </StackLayout>
+
+    </Grid>
+
+</ContentPage>
