@@ -7,7 +7,7 @@ using beadXamarin.ViewModel;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
-namespace Game
+namespace beadXamarin
 {
     public partial class App : Application
     {
@@ -193,7 +193,7 @@ namespace Game
         #region Model event handlers
 
         /// <summary>
-        /// Játék végének eseménykezelője.
+        /// Játék végének eseménykezelője
         /// </summary>
         private async void GameGameModel_GameOver(object sender, GameEventArgs e)
         {
@@ -201,7 +201,7 @@ namespace Game
 
             if (e.IsWon) // győzelemtől függő üzenet megjelenítése
             {
-                await MainPage.DisplayAlert("Game játék", "Gratulálok, győztél!" + Environment.NewLine +
+                await MainPage.DisplayAlert("MaciLaci játék", "Gratulálok, győztél!" + Environment.NewLine +
                                             "Összesen " +
                                             TimeSpan.FromSeconds(e.Time).ToString("g") + " ideig játszottál.",
                                             "OK");
