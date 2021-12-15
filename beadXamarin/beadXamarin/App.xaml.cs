@@ -1,11 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using beadXamarin.Model;
+﻿using beadXamarin.Model;
 using beadXamarin.Persistence;
 using beadXamarin.View;
 using beadXamarin.ViewModel;
+using System;
+using System.Threading.Tasks;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 
 namespace beadXamarin
 {
@@ -22,10 +21,12 @@ namespace beadXamarin
         private IStore _store;
         private StoredGameBrowserModel _storedGameBrowserModel;
         private StoredGameBrowserViewModel _storedGameBrowserViewModel;
-        private LoadGamePage _loadGamePage;
 
         private Boolean _advanceTimer;
+        private Boolean _updateTimer; //??
         private NavigationPage _mainPage;
+        private Boolean _isPaused;
+        private GameDifficulty _gameDifficulty;
 
         #endregion
 
@@ -33,16 +34,24 @@ namespace beadXamarin
 
         public App()
         {
-            // játék összeállítása
             _GameDataAccess = DependencyService.Get<IGameDataAccess>(); // az interfész megvalósítását automatikusan megkeresi a rendszer
 
             _GameModel = new GameModel(_GameDataAccess);
-            _GameModel.Over += new EventHandler<GameEventArgs>(GameGameModel_GameOver);
+            _GameModel.Over += new EventHandler<GameEventArgs>(GameModel_GameOver);
 
             _GameViewModel = new GameViewModel(_GameModel);
             _GameViewModel.NewGame += new EventHandler(GameViewModel_NewGame);
-            _GameViewModel.LoadGame += new EventHandler(GameViewModel_LoadGame);
             _GameViewModel.ExitGame += new EventHandler(GameViewModel_ExitGame);
+
+            _GameViewModel.KeyA += ViewModel_AKey;
+            _GameViewModel.KeyD += ViewModel_DKey;
+            _GameViewModel.KeyS += ViewModel_SKey;
+            _GameViewModel.KeyW += ViewModel_WKey;
+
+            _GameViewModel.PauseGame += GameViewModel_PauseGame;
+            _GameViewModel.LevelOne += LevelOne;
+            _GameViewModel.LevelTwo += LevelTwo;
+            _GameViewModel.LevelThree += LevelThree;
 
             _gamePage = new GamePage();
             _gamePage.BindingContext = _GameViewModel;
@@ -50,17 +59,12 @@ namespace beadXamarin
             _settingsPage = new SettingsPage();
             _settingsPage.BindingContext = _GameViewModel;
 
-            // a játékmentések kezelésének összeállítása
-            _store = DependencyService.Get<IStore>(); // a perzisztencia betöltése az adott platformon
+            _store = DependencyService.Get<IStore>();
             _storedGameBrowserModel = new StoredGameBrowserModel(_store);
             _storedGameBrowserViewModel = new StoredGameBrowserViewModel(_storedGameBrowserModel);
             _storedGameBrowserViewModel.GameLoading += new EventHandler<StoredGameEventArgs>(StoredGameBrowserViewModel_GameLoading);
 
-            _loadGamePage = new LoadGamePage();
-            _loadGamePage.BindingContext = _storedGameBrowserViewModel;
-
-            // nézet beállítása
-            _mainPage = new NavigationPage(_gamePage); // egy navigációs lapot használunk fel a három nézet kezelésére
+            _mainPage = new NavigationPage(_gamePage);
 
             MainPage = _mainPage;
         }
@@ -69,7 +73,7 @@ namespace beadXamarin
         {
             _GameModel.NewGame();
             _GameViewModel.RefreshTable();
-            _advanceTimer = true; // egy logikai értékkel szabályozzuk az időzítőt
+            _advanceTimer = true;
             Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; }); // elindítjuk az időzítőt
         }
 
@@ -77,59 +81,130 @@ namespace beadXamarin
         {
             _advanceTimer = false;
 
-            //// elmentjük a jelenleg folyó játékot
-            //try
-            //{
-            //    Task.Run(async () => await _GameModel.SaveGameAsync("SuspendedGame"));
-            //}
-            //catch { }
+            try
+            {
+                Task.Run(async () => await _GameModel.SaveGameAsync("SuspendedGame"));
+            }
+            catch { }
         }
 
-        //protected override void OnResume()
-        //{
-        //    // betöltjük a felfüggesztett játékot, amennyiben van
-        //    try
-        //    {
-        //        Task.Run(async () =>
-        //        {
-        //            await _GameGameModel.LoadGameAsync("SuspendedGame");
-        //            _GameViewModel.RefreshTable();
+        protected override void OnResume()
+        {
+            try
+            {
+                Task.Run(async () =>
+                {
+                    await _GameModel.LoadGameAsync("SuspendedGame");
+                    _GameViewModel.RefreshTable();
 
-        //            // csak akkor indul az időzítő, ha sikerült betölteni a játékot
-        //            _advanceTimer = true;
-        //            Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameGameModel.AdvanceTime(); return _advanceTimer; });
-        //        });
-        //    }
-        //    catch { }
+                    _advanceTimer = true;
+                    Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; });
+                });
+            }
+            catch { }
 
-        //}
+        }
 
         #endregion
 
         #region ViewModel event handlers
 
-        /// <summary>
-        /// Új játék indításának eseménykezelője.
-        /// </summary>
+        private void ViewModel_WKey(object sender, EventArgs e)
+        {
+            if (!_isPaused)
+            {
+                _GameModel.PlayerStep(GameDirection.Up);
+                _GameModel.RefreshTable();
+                _GameViewModel.RefreshTable();
+            }
+        }
+
+        private void ViewModel_SKey(object sender, EventArgs e)
+        {
+            if (!_isPaused)
+            {
+                _GameModel.PlayerStep(GameDirection.Down);
+                _GameModel.RefreshTable();
+                _GameViewModel.RefreshTable();
+            }
+        }
+
+        private void ViewModel_DKey(object sender, EventArgs e)
+        {
+            if (!_isPaused)
+            {
+                _GameModel.PlayerStep(GameDirection.Right);
+                _GameModel.RefreshTable();
+                _GameViewModel.RefreshTable();
+            }
+        }
+
+        private void ViewModel_AKey(object sender, EventArgs e)
+        {
+            if (!_isPaused)
+            {
+                _GameModel.PlayerStep(GameDirection.Left);
+                _GameModel.RefreshTable();
+                _GameViewModel.RefreshTable();
+            }
+        }
+
         private void GameViewModel_NewGame(object sender, EventArgs e)
         {
             _GameModel.NewGame();
 
             if (!_advanceTimer)
             {
-                // ha nem fut az időzítő, akkor elindítjuk
                 _advanceTimer = true;
                 Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; });
             }
         }
 
-        /// <summary>
-        /// Játék betöltésének eseménykezelője.
-        /// </summary>
-        private async void GameViewModel_LoadGame(object sender, System.EventArgs e)
+        private async void ViewModel_StartGame(object sender, System.EventArgs e, GameDifficulty gameLevel, String fileName)
         {
-            await _storedGameBrowserModel.UpdateAsync(); // frissítjük a tárolt játékok listáját
-            await _mainPage.PushAsync(_loadGamePage); // átnavigálunk a lapra
+            _gameDifficulty = gameLevel;
+
+            try
+            {
+                await _GameModel.LoadGameAsync(fileName);
+                _GameViewModel.CreateNewTable();
+            }
+            catch (GameDataException)
+            {
+            }
+
+            if (!_advanceTimer)
+            {
+                _advanceTimer = true;
+                _isPaused = false;
+                Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; });
+            }
+        }
+
+        private void LevelOne(object sender, System.EventArgs e)
+        {
+            ViewModel_StartGame(sender, e, GameDifficulty.Easy, @"..\..\..\table1.txt");
+        }
+
+        private void LevelTwo(object sender, System.EventArgs e)
+        {
+            ViewModel_StartGame(sender, e, GameDifficulty.Medium, @"..\..\..\table2.txt");
+        }
+
+        private void LevelThree(object sender, System.EventArgs e)
+        {
+            ViewModel_StartGame(sender, e, GameDifficulty.Hard, @"..\..\..\table3.txt");
+        }
+
+        //private async void GameViewModel_LoadGame(object sender, System.EventArgs e)
+        //{
+        //    await _storedGameBrowserModel.UpdateAsync(); // frissítjük a tárolt játékok listáját
+        //    await _mainPage.PushAsync(_loadGamePage); // átnavigálunk a lapra
+        //}
+
+        private async void ViewModel_ExitGame(object sender, System.EventArgs e)
+        {
+            await _mainPage.PushAsync(_settingsPage);
         }
 
         /// <summary>
@@ -146,6 +221,34 @@ namespace beadXamarin
             await _mainPage.PushAsync(_settingsPage); // átnavigálunk a beállítások lapra
         }
 
+        private void GameViewModel_PauseGame(object sender, EventArgs e)
+        {
+            if (!_isPaused)
+            {
+                _isPaused = true;
+
+            }
+            else if (_isPaused)
+            {
+                _isPaused = false;
+            }
+        }
+
+        private void SneakingOutViewModel_RestartGame(object sender, EventArgs e)
+        {
+            if (_gameDifficulty == GameDifficulty.Easy)
+            {
+                LevelOne(sender, e);
+            }
+            if (_gameDifficulty == GameDifficulty.Medium)
+            {
+                LevelTwo(sender, e);
+            }
+            if (_gameDifficulty == GameDifficulty.Hard)
+            {
+                LevelThree(sender, e);
+            }
+        }
 
         /// <summary>
         /// Betöltés végrehajtásának eseménykezelője.
@@ -170,32 +273,11 @@ namespace beadXamarin
             }
         }
 
-        /// <summary>
-        /// Mentés végrehajtásának eseménykezelője.
-        /// </summary>
-        //private async void StoredGameBrowserViewModel_GameSaving(object sender, StoredGameEventArgs e)
-        //{
-        //    await _mainPage.PopAsync(); // visszanavigálunk
-        //    _advanceTimer = false;
-
-        //    try
-        //    {
-        //        // elmentjük a játékot
-        //        await _GameGameModel.SaveGameAsync(e.Name);
-        //    }
-        //    catch { }
-
-        //    await MainPage.DisplayAlert("Game játék", "Sikeres mentés.", "OK");
-        //}
-
         #endregion
 
         #region Model event handlers
 
-        /// <summary>
-        /// Játék végének eseménykezelője
-        /// </summary>
-        private async void GameGameModel_GameOver(object sender, GameEventArgs e)
+        private async void GameModel_GameOver(object sender, GameEventArgs e)
         {
             _advanceTimer = false;
 

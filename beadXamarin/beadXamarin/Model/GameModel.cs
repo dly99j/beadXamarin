@@ -202,6 +202,14 @@ namespace beadXamarin.Model
             FoodCount = mGameTable.NumOfFood;
         }
 
+        public async Task SaveGameAsync(String path)
+        {
+            if (mDataAccess == null)
+                throw new InvalidOperationException("No data access is provided.");
+
+            await mDataAccess.SaveAsync(path, mGameTable);
+        }
+
         public void GameOver()
         {
             if (FoodCount == 0)

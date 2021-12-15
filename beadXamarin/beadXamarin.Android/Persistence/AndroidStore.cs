@@ -1,10 +1,10 @@
-﻿using System;
+﻿using beadXamarin.Droid.Persistence;
+using beadXamarin.Persistence;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using beadXamarin.Droid.Persistence;
-using beadXamarin.Persistence;
 using Xamarin.Forms;
 
 [assembly: Dependency(typeof(AndroidStore))]

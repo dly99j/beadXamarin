@@ -1,8 +1,8 @@
-﻿using System;
+﻿using beadXamarin.Persistence;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using beadXamarin.Persistence;
 
 namespace beadXamarin.Model
 {

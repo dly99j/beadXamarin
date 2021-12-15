@@ -1,6 +1,6 @@
-﻿using System;
+﻿using beadXamarin.Model;
+using System;
 using System.Collections.ObjectModel;
-using beadXamarin.Model;
 
 namespace beadXamarin.ViewModel
 {
@@ -15,7 +15,7 @@ namespace beadXamarin.ViewModel
         /// Betöltés eseménye.
         /// </summary>
         public event EventHandler<StoredGameEventArgs> GameLoading;
-        
+
 
         /// <summary>
         /// Tárolt játékkezelő nézetmodelljének példányosítása.

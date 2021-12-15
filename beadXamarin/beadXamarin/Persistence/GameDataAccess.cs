@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace beadXamarin.Persistence
@@ -31,6 +32,11 @@ namespace beadXamarin.Persistence
             {
                 throw new GameDataException();
             }
+        }
+
+        public async Task SaveAsync(string path, GameTable table)
+        {
+            throw new NotImplementedException();
         }
     }
 }
