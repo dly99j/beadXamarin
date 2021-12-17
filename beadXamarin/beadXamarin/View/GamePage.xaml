@@ -11,6 +11,7 @@
             <Style x:Key="MainLabelStyle" TargetType="Label">
                 <Setter Property="FontSize" Value="Micro" />
                 <Setter Property="Margin" Value="1" />
+                <Setter Property="TextColor" Value="Black"/>
             </Style>
             <Style x:Key="MainButtonStyle" TargetType="Button">
                 <Setter Property="FontSize" Value="Micro" />
@@ -18,7 +19,7 @@
                 <Setter Property="BorderRadius" Value="0" />
                 <Setter Property="BorderWidth" Value="0" />
                 <Setter Property="BorderColor" Value="Blue" />
-                <Setter Property="Margin" Value="5" />
+                <Setter Property="Margin" Value="0" />
                 <Setter Property="HeightRequest" Value="30" />
             </Style>
             <Style x:Key="FieldStyle" TargetType="Button">
@@ -26,33 +27,23 @@
                 <Setter Property="Margin" Value="0" />
                 <Setter Property="BorderRadius" Value="0" />
                 <Setter Property="BorderWidth" Value="0" />
-                <Setter Property="WidthRequest" Value="28" />
-                <Setter Property="HeightRequest" Value="28" />
+                <Setter Property="WidthRequest" Value="55" />
+                <Setter Property="HeightRequest" Value="55" />
                 <Style.Triggers>
                     <DataTrigger TargetType="Button" Binding="{Binding IsPlayer}" Value="True">
                         <Setter Property="BackgroundColor" Value="Green" />
-                        <Setter Property="TextColor" Value="White" />
-                        <Setter Property="BorderColor" Value="Gray" />
                     </DataTrigger>
                     <DataTrigger TargetType="Button" Binding="{Binding IsGuard}" Value="True">
                         <Setter Property="BackgroundColor" Value="Blue" />
-                        <Setter Property="TextColor" Value="White" />
-                        <Setter Property="BorderColor" Value="Gray" />
                     </DataTrigger>
                     <DataTrigger TargetType="Button" Binding="{Binding IsTree}" Value="True">
-                        <Setter Property="BackgroundColor" Value="Brown" />
-                        <Setter Property="TextColor" Value="White" />
-                        <Setter Property="BorderColor" Value="Gray" />
+                        <Setter Property="BackgroundColor" Value="SaddleBrown" />
                     </DataTrigger>
                     <DataTrigger TargetType="Button" Binding="{Binding IsFood}" Value="True">
                         <Setter Property="BackgroundColor" Value="Red" />
-                        <Setter Property="TextColor" Value="White" />
-                        <Setter Property="BorderColor" Value="Gray" />
                     </DataTrigger>
                     <DataTrigger TargetType="Button" Binding="{Binding IsEmpty}" Value="True">
-                        <Setter Property="BackgroundColor" Value="Gray" />
-                        <Setter Property="TextColor" Value="White" />
-                        <Setter Property="BorderColor" Value="Gray" />
+                        <Setter Property="BackgroundColor" Value="Beige" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -66,14 +57,13 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Button Text="Level 1" Command="{Binding LevelOneCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="0" HorizontalOptions="Start" />
         <Button Text="Level 2" Command="{Binding LevelTwoCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="0" HorizontalOptions="Center" />
         <Button Text="Level 3" Command="{Binding LevelThreeCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="0" HorizontalOptions="End" />
-        <Button Text="Pause" Command="{Binding PauseCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="1" HorizontalOptions="Start" />
-        <Button Text="Restart" Command="{Binding NewGameCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="1" HorizontalOptions="End" />
-        <Button Text="Game" Command="{Binding ExitCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="1" HorizontalOptions="Center" />
+        <Button Text="Pause" Command="{Binding PauseCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="1" HorizontalOptions="Center" />
 
         <controls:FlowListView Grid.Row="2" FlowColumnCount="10" FlowItemsSource="{Binding Fields}" SeparatorVisibility="None">
             <controls:FlowListView.FlowColumnTemplate>
@@ -83,10 +73,10 @@
             </controls:FlowListView.FlowColumnTemplate>
         </controls:FlowListView>
 
-        <Button Text="Up" Command="{Binding WKeyDownCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="3" HorizontalOptions="Center" />
-        <Button Text="Down" Command="{Binding SKeyDownCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="4" HorizontalOptions="Center" />
-        <Button Text="Right" Command="{Binding DKeyDownCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="4" HorizontalOptions="End" />
-        <Button Text="Left" Command="{Binding AKeyDownCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="4" HorizontalOptions="Start" />
+        <Button Text="Up" Command="{Binding WKeyCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="3" HorizontalOptions="Center" />
+        <Button Text="Right" Command="{Binding DKeyCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="4" HorizontalOptions="End" />
+        <Button Text="Left" Command="{Binding AKeyCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="4" HorizontalOptions="Start" />
+        <Button Text="Down" Command="{Binding SKeyCommand}" Style="{StaticResource MainButtonStyle}" Grid.Row="5" HorizontalOptions="Center" />
 
 
         <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Grid.Row="2">

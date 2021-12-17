@@ -97,6 +97,14 @@
       <Name>beadXamarin</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\table1.txt" />
+    <AndroidAsset Include="Assets\table2.txt" />
+    <AndroidAsset Include="Assets\table3.txt" />
+    <Content Include="table1.txt" />
+    <Content Include="table2.txt" />
+    <Content Include="table3.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>

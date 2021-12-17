@@ -3,6 +3,7 @@ using beadXamarin.Persistence;
 using beadXamarin.View;
 using beadXamarin.ViewModel;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
@@ -16,7 +17,6 @@ namespace beadXamarin
         private GameModel _GameModel;
         private GameViewModel _GameViewModel;
         private GamePage _gamePage;
-        private SettingsPage _settingsPage;
 
         private IStore _store;
         private StoredGameBrowserModel _storedGameBrowserModel;
@@ -27,6 +27,7 @@ namespace beadXamarin
         private NavigationPage _mainPage;
         private Boolean _isPaused;
         private GameDifficulty _gameDifficulty;
+        private System.Threading.Timer _timer;
 
         #endregion
 
@@ -34,7 +35,7 @@ namespace beadXamarin
 
         public App()
         {
-            _GameDataAccess = DependencyService.Get<IGameDataAccess>(); // az interfész megvalósítását automatikusan megkeresi a rendszer
+            _GameDataAccess = DependencyService.Get<IGameDataAccess>(); 
 
             _GameModel = new GameModel(_GameDataAccess);
             _GameModel.Over += new EventHandler<GameEventArgs>(GameModel_GameOver);
@@ -52,12 +53,11 @@ namespace beadXamarin
             _GameViewModel.LevelOne += LevelOne;
             _GameViewModel.LevelTwo += LevelTwo;
             _GameViewModel.LevelThree += LevelThree;
+            _GameViewModel.RestartGame += GameViewModel_RestartGame;
 
             _gamePage = new GamePage();
             _gamePage.BindingContext = _GameViewModel;
 
-            _settingsPage = new SettingsPage();
-            _settingsPage.BindingContext = _GameViewModel;
 
             _store = DependencyService.Get<IStore>();
             _storedGameBrowserModel = new StoredGameBrowserModel(_store);
@@ -67,14 +67,16 @@ namespace beadXamarin
             _mainPage = new NavigationPage(_gamePage);
 
             MainPage = _mainPage;
+
+            _isPaused = false;
         }
 
         protected override void OnStart()
         {
-            _GameModel.NewGame();
-            _GameViewModel.RefreshTable();
-            _advanceTimer = true;
-            Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; }); // elindítjuk az időzítőt
+            //_GameModel.NewGame();
+            //_GameViewModel.RefreshTable();
+            _advanceTimer = false;
+            //Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; }); // elindítjuk az időzítőt
         }
 
         protected override void OnSleep()
@@ -98,7 +100,15 @@ namespace beadXamarin
                     _GameViewModel.RefreshTable();
 
                     _advanceTimer = true;
-                    Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; });
+                    //Device.StartTimer(TimeSpan.FromSeconds(0.1), () =>
+                    //{
+                    //    _GameModel.AdvanceTime();
+                    //    return _advanceTimer;
+                    //});
+                    _timer = new Timer((object state) =>
+                    {
+                        _GameModel.AdvanceTime();
+                    }, this, 0, 1000);
                 });
             }
             catch { }
@@ -111,7 +121,7 @@ namespace beadXamarin
 
         private void ViewModel_WKey(object sender, EventArgs e)
         {
-            if (!_isPaused)
+            if (!_isPaused && _advanceTimer)
             {
                 _GameModel.PlayerStep(GameDirection.Up);
                 _GameModel.RefreshTable();
@@ -121,7 +131,7 @@ namespace beadXamarin
 
         private void ViewModel_SKey(object sender, EventArgs e)
         {
-            if (!_isPaused)
+            if (!_isPaused && _advanceTimer)
             {
                 _GameModel.PlayerStep(GameDirection.Down);
                 _GameModel.RefreshTable();
@@ -131,7 +141,7 @@ namespace beadXamarin
 
         private void ViewModel_DKey(object sender, EventArgs e)
         {
-            if (!_isPaused)
+            if (!_isPaused && _advanceTimer)
             {
                 _GameModel.PlayerStep(GameDirection.Right);
                 _GameModel.RefreshTable();
@@ -141,7 +151,7 @@ namespace beadXamarin
 
         private void ViewModel_AKey(object sender, EventArgs e)
         {
-            if (!_isPaused)
+            if (!_isPaused && _advanceTimer)
             {
                 _GameModel.PlayerStep(GameDirection.Left);
                 _GameModel.RefreshTable();
@@ -156,7 +166,15 @@ namespace beadXamarin
             if (!_advanceTimer)
             {
                 _advanceTimer = true;
-                Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; });
+                //Device.StartTimer(TimeSpan.FromSeconds(0.1), () =>
+                //{
+                //    _GameModel.AdvanceTime();
+                //    return _advanceTimer;
+                //});
+                _timer = new Timer((object state) =>
+                {
+                    _GameModel.AdvanceTime();
+                }, this, 0, 1000);
             }
         }
 
@@ -171,29 +189,38 @@ namespace beadXamarin
             }
             catch (GameDataException)
             {
+                throw;
             }
 
             if (!_advanceTimer)
             {
                 _advanceTimer = true;
                 _isPaused = false;
-                Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; });
+                //Device.StartTimer(TimeSpan.FromSeconds(0.1), () =>
+                //{
+                //    _GameModel.AdvanceTime();
+                //    return _advanceTimer;
+                //});
+                _timer = new Timer((object state) =>
+                {
+                    _GameModel.AdvanceTime();
+                }, this, 0, 1000);
             }
         }
 
         private void LevelOne(object sender, System.EventArgs e)
         {
-            ViewModel_StartGame(sender, e, GameDifficulty.Easy, @"..\..\..\table1.txt");
+            ViewModel_StartGame(sender, e, GameDifficulty.Easy, @"table1.txt");
         }
 
         private void LevelTwo(object sender, System.EventArgs e)
         {
-            ViewModel_StartGame(sender, e, GameDifficulty.Medium, @"..\..\..\table2.txt");
+            ViewModel_StartGame(sender, e, GameDifficulty.Medium, @"table2.txt");
         }
 
         private void LevelThree(object sender, System.EventArgs e)
         {
-            ViewModel_StartGame(sender, e, GameDifficulty.Hard, @"..\..\..\table3.txt");
+            ViewModel_StartGame(sender, e, GameDifficulty.Hard, @"table3.txt");
         }
 
         //private async void GameViewModel_LoadGame(object sender, System.EventArgs e)
@@ -201,11 +228,7 @@ namespace beadXamarin
         //    await _storedGameBrowserModel.UpdateAsync(); // frissítjük a tárolt játékok listáját
         //    await _mainPage.PushAsync(_loadGamePage); // átnavigálunk a lapra
         //}
-
-        private async void ViewModel_ExitGame(object sender, System.EventArgs e)
-        {
-            await _mainPage.PushAsync(_settingsPage);
-        }
+        
 
         /// <summary>
         /// Játék mentésének eseménykezelője.
@@ -218,7 +241,6 @@ namespace beadXamarin
 
         private async void GameViewModel_ExitGame(object sender, EventArgs e)
         {
-            await _mainPage.PushAsync(_settingsPage); // átnavigálunk a beállítások lapra
         }
 
         private void GameViewModel_PauseGame(object sender, EventArgs e)
@@ -226,15 +248,21 @@ namespace beadXamarin
             if (!_isPaused)
             {
                 _isPaused = true;
-
+                _advanceTimer = false;
+                _timer.Dispose();
             }
             else if (_isPaused)
             {
                 _isPaused = false;
+                _advanceTimer = false;
+                _timer = new Timer((object state) =>
+                {
+                    _GameModel.AdvanceTime();
+                }, this, 0, 1000);
             }
         }
 
-        private void SneakingOutViewModel_RestartGame(object sender, EventArgs e)
+        private void GameViewModel_RestartGame(object sender, EventArgs e)
         {
             if (_gameDifficulty == GameDifficulty.Easy)
             {
@@ -265,7 +293,10 @@ namespace beadXamarin
 
                 // csak akkor indul az időzítő, ha sikerült betölteni a játékot
                 _advanceTimer = true;
-                Device.StartTimer(TimeSpan.FromSeconds(1), () => { _GameModel.AdvanceTime(); return _advanceTimer; });
+                _timer = new Timer((object state) =>
+                {
+                    _GameModel.AdvanceTime();
+                }, this, 0, 1000);
             }
             catch
             {
@@ -283,14 +314,20 @@ namespace beadXamarin
 
             if (e.IsWon) // győzelemtől függő üzenet megjelenítése
             {
-                await MainPage.DisplayAlert("MaciLaci játék", "Gratulálok, győztél!" + Environment.NewLine +
-                                            "Összesen " +
-                                            TimeSpan.FromSeconds(e.Time).ToString("g") + " ideig játszottál.",
-                                            "OK");
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await MainPage.DisplayAlert("MaciLaci játék", "Gratulálok, győztél!" + Environment.NewLine + 
+                                                                  "Összesen " + 
+                                                                  TimeSpan.FromSeconds(e.Time).ToString("g") + " ideig játszottál.", 
+                                                            "OK");
+                });
             }
             else
             {
-                await MainPage.DisplayAlert("Game játék", "Sajnálom, vesztettél, lejárt az idő!", "OK");
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await MainPage.DisplayAlert("MaciLaci játék", "Sajnálom, vesztettél, lejárt az idő!", "OK");
+                });
             }
         }
 

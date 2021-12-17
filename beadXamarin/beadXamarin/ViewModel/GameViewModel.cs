@@ -30,6 +30,7 @@ namespace beadXamarin.ViewModel
         public DelegateCommand PKeyCommand { get; private set; }
         public DelegateCommand LoadGameCommand { get; private set; }
         public DelegateCommand SizeCommand { get; private set; }
+        public DelegateCommand RestartGameCommand { get; private set; }
 
 
         public ObservableCollection<GameField> Fields { get; set; }
@@ -82,7 +83,9 @@ namespace beadXamarin.ViewModel
 
         #region Events
 
+
         public event EventHandler NewGame;
+        public event EventHandler RestartGame;
         public event EventHandler LoadGame;
         public event EventHandler ExitGame;
         public event EventHandler KeyW;
@@ -185,7 +188,7 @@ namespace beadXamarin.ViewModel
         public void RefreshTable()
         {
             GameSize = _model.Height;
-            foreach (var field in Fields) // inicializálni kell a mezőket is
+            foreach (var field in Fields) 
             {
                 field.Text = _model.CharTableRepresentation[field.X, field.Y].ToString();
                 field.setFalse();
@@ -216,7 +219,7 @@ namespace beadXamarin.ViewModel
         /// </summary>
         private void Model_GameOver(object sender, GameEventArgs e)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -293,6 +296,10 @@ namespace beadXamarin.ViewModel
         private void OnSize()
         {
             SizeEvent?.Invoke(this, EventArgs.Empty);
+        }
+        private void OnRestartGame()
+        {
+            RestartGame?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion
