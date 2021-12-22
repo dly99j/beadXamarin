@@ -5,13 +5,13 @@ using System.IO;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
-[assembly: Dependency(typeof(AndroidDataAccess))]
+[assembly: Dependency(typeof(UWPDataAccess))]
 namespace beadXamarin.Droid.Persistence
 {
     /// <summary>
     /// Tic-Tac-Toe adatel�r�s megval�s�t�sa Android platformra.
     /// </summary>
-    public class AndroidDataAccess : IGameDataAccess
+    public class UWPDataAccess : IGameDataAccess
     {
         /// <summary>
         /// F�jl bet�lt�se.
